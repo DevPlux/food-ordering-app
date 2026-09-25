@@ -37,6 +37,17 @@ const FILTERS: FilterKey[] = [
 
 const ADMIN_DARK = "#1F2937";
 
+// ===== Helper: safely extract a display string from order.user =====
+const getUserLabel = (user: any): string => {
+  if (!user) return "—";
+  if (typeof user === "string") return user;
+  if (typeof user === "object") {
+    if (user.name) return user.name;
+    if (user._id) return user._id;
+  }
+  return "—";
+};
+
 export default function AdminOrdersScreen({ navigation }: Props) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -233,6 +244,7 @@ export default function AdminOrdersScreen({ navigation }: Props) {
               ? item.totalAmount.toFixed(2)
               : "0.00";
           const date = new Date(item.orderDate);
+          const customerLabel = getUserLabel(item.user);
 
           return (
             <TouchableOpacity
@@ -259,7 +271,7 @@ export default function AdminOrdersScreen({ navigation }: Props) {
                     size={11}
                     color={colors.textMuted}
                   />
-                  <Text style={styles.orderMetaText}>{item.user || "—"}</Text>
+                  <Text style={styles.orderMetaText}>{customerLabel}</Text>
                   <Text style={styles.dot}>•</Text>
                   <Text style={styles.orderMetaText}>Qty {item.quantity}</Text>
                 </View>
