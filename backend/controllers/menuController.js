@@ -40,7 +40,7 @@ export const createMenuItem = async (req, res) => {
       description,
       price,
       category,
-      availabilityStatus: availabilityStatus !== undefined ? availabilityStatus : true,
+      availabilityStatus: availabilityStatus || 'Available',
       imageUrl,
     });
 
@@ -64,6 +64,9 @@ export const updateMenuItem = async (req, res) => {
       menuItem.category = category || menuItem.category;
 
       if (availabilityStatus !== undefined) {
+        if (!['Available', 'Unavailable'].includes(availabilityStatus)) {
+          return res.status(400).json({ message: 'availabilityStatus must be Available or Unavailable' });
+        }
         menuItem.availabilityStatus = availabilityStatus;
       }
 

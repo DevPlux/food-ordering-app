@@ -1,5 +1,5 @@
 // src/screens/admin/MenuItemFormScreen.tsx
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Modal,
+  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,6 +31,18 @@ type Props = NativeStackScreenProps<AdminStackParamList, "MenuItemForm">;
 
 const ADMIN_DARK = "#1F2937";
 
+// Fixed category list for the dropdown
+const CATEGORIES = [
+  "Main Course",
+  "Fast Food",
+  "Beverage",
+  "Dessert",
+  "Snack",
+  "Salad",
+  "Breakfast",
+  "Side Dish",
+];
+
 export default function MenuItemFormScreen({ route, navigation }: Props) {
   const editingId = route.params?.itemId;
   const isEditing = Boolean(editingId);
@@ -47,11 +61,8 @@ export default function MenuItemFormScreen({ route, navigation }: Props) {
   const [saving, setSaving] = useState(false);
   const [loadingItem, setLoadingItem] = useState(isEditing);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    });
-  }, [navigation]);
+  // Dropdown state
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
   useEffect(() => {
     if (!isEditing || !editingId) return;
@@ -80,7 +91,7 @@ export default function MenuItemFormScreen({ route, navigation }: Props) {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
@@ -121,6 +132,7 @@ export default function MenuItemFormScreen({ route, navigation }: Props) {
     if (!price.trim()) v.price = "Price is required";
     else if (isNaN(Number(price)) || Number(price) <= 0)
       v.price = "Enter a valid price";
+    if (!imageUri) v.image = "Please choose a photo";
     return v;
   };
 
@@ -216,6 +228,9 @@ export default function MenuItemFormScreen({ route, navigation }: Props) {
               </View>
             )}
           </TouchableOpacity>
+          {errors.image ? (
+            <Text style={styles.imageError}>{errors.image}</Text>
+          ) : null}
 
           {/* ===== Basic Info ===== */}
           <Text style={styles.sectionHeading}>Basic Info</Text>
@@ -235,13 +250,34 @@ export default function MenuItemFormScreen({ route, navigation }: Props) {
               multiline
               numberOfLines={3}
             />
-            <InputField
-              label="Category"
-              value={category}
-              onChangeText={setCategory}
-              placeholder="e.g. Main Course"
-              error={errors.category}
-            />
+
+            {/* ===== Category Dropdown ===== */}
+            <Text style={styles.fieldLabel}>Category</Text>
+            <TouchableOpacity
+              style={[
+                styles.dropdownTrigger,
+                errors.category ? styles.dropdownTriggerError : null,
+              ]}
+              onPress={() => setCategoryOpen(true)}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.dropdownTriggerText,
+                  !category && styles.dropdownPlaceholder,
+                ]}
+              >
+                {category || "Select a category"}
+              </Text>
+              <Ionicons
+                name="chevron-down"
+                size={18}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
+            {errors.category ? (
+              <Text style={styles.fieldError}>{errors.category}</Text>
+            ) : null}
           </View>
 
           {/* ===== Pricing ===== */}
@@ -328,6 +364,80 @@ export default function MenuItemFormScreen({ route, navigation }: Props) {
           <View style={{ height: 30 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* ===== Category Dropdown Modal ===== */}
+      <Modal
+        visible={categoryOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCategoryOpen(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setCategoryOpen(false)}
+        >
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Select Category</Text>
+
+            <FlatList
+              data={CATEGORIES}
+              keyExtractor={(c) => c}
+              showsVerticalScrollIndicator={false}
+              style={{ maxHeight: 380 }}
+              renderItem={({ item }) => {
+                const isSelected = item === category;
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.categoryRow,
+                      isSelected && styles.categoryRowSelected,
+                    ]}
+                    onPress={() => {
+                      setCategory(item);
+                      setCategoryOpen(false);
+                      setErrors((prev) => {
+                        const copy = { ...prev };
+                        delete copy.category;
+                        return copy;
+                      });
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryRowText,
+                        isSelected && styles.categoryRowTextSelected,
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                    {isSelected && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
+              ItemSeparatorComponent={() => (
+                <View style={styles.categorySeparator} />
+              )}
+            />
+
+            <TouchableOpacity
+              style={styles.modalCancel}
+              onPress={() => setCategoryOpen(false)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.modalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -384,7 +494,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: colors.surface,
     overflow: "hidden",
-    marginBottom: 20,
+    marginBottom: 6,
     borderWidth: 2,
     borderStyle: "dashed",
     borderColor: colors.border,
@@ -437,6 +547,11 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 3,
   },
+  imageError: {
+    color: colors.danger,
+    fontSize: 13,
+    marginBottom: 14,
+  },
 
   // ===== Section heading =====
   sectionHeading: {
@@ -446,7 +561,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     textTransform: "uppercase",
     marginBottom: 8,
-    marginTop: 6,
+    marginTop: 16,
   },
 
   // ===== Form card =====
@@ -454,12 +569,47 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 14,
     padding: 14,
-    marginBottom: 16,
+    marginBottom: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
+  },
+
+  // ===== Category dropdown trigger =====
+  fieldLabel: {
+    fontSize: 14,
+    color: colors.text,
+    marginBottom: 6,
+    fontWeight: "500",
+  },
+  dropdownTrigger: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: colors.white,
+    marginBottom: 4,
+  },
+  dropdownTriggerError: {
+    borderColor: colors.danger,
+  },
+  dropdownTriggerText: {
+    fontSize: 15,
+    color: colors.text,
+  },
+  dropdownPlaceholder: {
+    color: colors.textMuted,
+  },
+  fieldError: {
+    color: colors.danger,
+    fontSize: 13,
+    marginTop: 4,
   },
 
   // ===== Toggle =====
@@ -512,5 +662,67 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 15,
     marginLeft: 8,
+  },
+
+  // ===== Modal =====
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "flex-end",
+  },
+  modalSheet: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 8,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
+    alignSelf: "center",
+    marginBottom: 14,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: colors.text,
+    marginBottom: 10,
+  },
+  categoryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+  },
+  categoryRowSelected: {},
+  categoryRowText: {
+    fontSize: 15,
+    color: colors.text,
+    fontWeight: "500",
+  },
+  categoryRowTextSelected: {
+    color: colors.primary,
+    fontWeight: "700",
+  },
+  categorySeparator: {
+    height: 1,
+    backgroundColor: colors.surface,
+  },
+  modalCancel: {
+    marginTop: 12,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+  },
+  modalCancelText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.text,
   },
 });

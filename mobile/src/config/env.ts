@@ -1,10 +1,13 @@
+// src/config/env.ts
 import Constants from "expo-constants";
 
-// Auto-detects your computer's LAN IP from Expo's dev server address.
-// This lets your phone reach the backend running on your computer.
+// Auto-detect (usually works)
 const debuggerHost = Constants.expoConfig?.hostUri;
-const localIp = debuggerHost ? debuggerHost.split(":")[0] : "localhost";
+const autoIp = debuggerHost ? debuggerHost.split(":")[0] : "localhost";
+
+// Uncomment and set this if auto-detect fails:
+// const autoIp = "192.168.1.5";
 
 export const API_BASE_URL = __DEV__
-  ? `http://${localIp}:5000/api`
+  ? `http://${autoIp}:5000/api`
   : "https://your-backend.onrender.com/api";

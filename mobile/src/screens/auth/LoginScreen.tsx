@@ -23,7 +23,7 @@ import { AuthStackParamList } from "../../navigation/types";
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
 export default function LoginScreen({ navigation }: Props) {
-  const { login, devLogin } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -46,15 +46,6 @@ export default function LoginScreen({ navigation }: Props) {
     }
   };
 
-  const handleDevLogin = async (asAdmin: boolean) => {
-    setLoading(true);
-    try {
-      await devLogin(asAdmin);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.background }}
@@ -65,7 +56,7 @@ export default function LoginScreen({ navigation }: Props) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ===== Hero Header ===== */}
+        {/* Hero */}
         <SafeAreaView edges={["top"]} style={styles.hero}>
           <View style={styles.blob1} />
           <View style={styles.blob2} />
@@ -79,7 +70,7 @@ export default function LoginScreen({ navigation }: Props) {
           <Text style={styles.tagline}>Delicious food, delivered fast</Text>
         </SafeAreaView>
 
-        {/* ===== Form Card (overlaps hero) ===== */}
+        {/* Form */}
         <View style={styles.cardWrapper}>
           <View style={styles.card}>
             <Text style={styles.title}>Welcome back</Text>
@@ -119,53 +110,6 @@ export default function LoginScreen({ navigation }: Props) {
               <Text style={styles.linkText}>Don't have an account? </Text>
               <Text style={styles.linkBold}>Register</Text>
             </TouchableOpacity>
-
-            {/* ⚠️ TEMPORARY DEV LOGIN — remove when backend is connected */}
-            <View style={styles.devBox}>
-              <View style={styles.devDivider}>
-                <View style={styles.devLine} />
-                <Text style={styles.devLabel}>DEV MODE</Text>
-                <View style={styles.devLine} />
-              </View>
-              <Text style={styles.devHint}>
-                Backend not connected yet. Use these to preview the app.
-              </Text>
-              <View style={styles.devRow}>
-                <TouchableOpacity
-                  style={[styles.devBtn, { borderColor: colors.primary }]}
-                  onPress={() => handleDevLogin(false)}
-                  activeOpacity={0.8}
-                  disabled={loading}
-                >
-                  <Ionicons
-                    name="person-outline"
-                    size={14}
-                    color={colors.primary}
-                  />
-                  <Text style={[styles.devBtnText, { color: colors.primary }]}>
-                    As Customer
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.devBtn,
-                    { borderColor: "#1F2937", backgroundColor: "#1F2937" },
-                  ]}
-                  onPress={() => handleDevLogin(true)}
-                  activeOpacity={0.8}
-                  disabled={loading}
-                >
-                  <Ionicons
-                    name="shield-checkmark"
-                    size={14}
-                    color={colors.white}
-                  />
-                  <Text style={[styles.devBtnText, { color: colors.white }]}>
-                    As Admin
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
           </View>
         </View>
       </ScrollView>
@@ -174,7 +118,6 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  // ===== Hero =====
   hero: {
     backgroundColor: colors.primary,
     paddingTop: 30,
@@ -238,8 +181,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontWeight: "500",
   },
-
-  // ===== Card =====
   cardWrapper: {
     flex: 1,
     paddingHorizontal: 20,
@@ -275,51 +216,4 @@ const styles = StyleSheet.create({
   },
   linkText: { color: colors.textMuted, fontSize: 14 },
   linkBold: { color: colors.primary, fontSize: 14, fontWeight: "700" },
-
-  // ===== Dev =====
-  devBox: {
-    marginTop: 28,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.surface,
-  },
-  devDivider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  devLine: { flex: 1, height: 1, backgroundColor: colors.border },
-  devLabel: {
-    fontSize: 10,
-    fontWeight: "800",
-    color: colors.textMuted,
-    letterSpacing: 1.5,
-    marginHorizontal: 12,
-  },
-  devHint: {
-    fontSize: 11,
-    color: colors.textMuted,
-    textAlign: "center",
-    marginBottom: 12,
-    fontStyle: "italic",
-  },
-  devRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  devBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    backgroundColor: colors.white,
-  },
-  devBtnText: {
-    fontSize: 12,
-    fontWeight: "700",
-    marginLeft: 6,
-  },
 });
