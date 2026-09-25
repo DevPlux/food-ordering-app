@@ -94,6 +94,18 @@ const NEXT_ACTIONS: Record<
   Cancelled: [],
 };
 
+// ===== Helper: safely extract a display string from order.user =====
+// Handles both populated object { _id, name, email } and raw ObjectId string
+const getCustomerLabel = (user: any): string => {
+  if (!user) return "—";
+  if (typeof user === "string") return user;
+  if (typeof user === "object") {
+    if (user.name) return user.name;
+    if (user._id) return user._id;
+  }
+  return "—";
+};
+
 export default function AdminOrderDetailScreen({ route, navigation }: Props) {
   const { orderId } = route.params;
   const [order, setOrder] = useState<Order | null>(null);
@@ -190,6 +202,7 @@ export default function AdminOrderDetailScreen({ route, navigation }: Props) {
   const actions = NEXT_ACTIONS[order.status] || [];
   const currentStepIndex = STEPS.indexOf(order.status);
   const isCancelled = order.status === "Cancelled";
+  const customerLabel = getCustomerLabel(order.user);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -300,8 +313,8 @@ export default function AdminOrderDetailScreen({ route, navigation }: Props) {
         <View style={styles.infoCard}>
           <InfoRow
             icon="person-outline"
-            label="Customer ID"
-            value={order.user || "—"}
+            label="Customer"
+            value={customerLabel}
           />
           <View style={styles.divider} />
           <InfoRow

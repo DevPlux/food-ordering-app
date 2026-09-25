@@ -55,7 +55,9 @@ export const getMyOrders = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find({}).populate('menuItem');
+    const orders = await Order.find({})
+      .populate("user", "name email")
+      .populate("menuItem");
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
