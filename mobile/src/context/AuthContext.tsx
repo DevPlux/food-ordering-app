@@ -22,10 +22,14 @@ type AuthContextType = {
   initializing: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  devLogin: (asAdmin: boolean) => Promise<void>;
   logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Minimum time the splash screen stays visible (in ms)
+const MIN_SPLASH_MS = 1400;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -34,28 +38,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const bootstrap = async () => {
+      const startedAt = Date.now();
       try {
-        const storedToken = await AsyncStorage.getItem("token");
-        const storedUser = await AsyncStorage.getItem("user");
+        const [storedToken, storedUser] = await Promise.all([
+          AsyncStorage.getItem("token"),
+          AsyncStorage.getItem("user"),
+        ]);
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
-        } else {
-          // ⚠️ TEMPORARY DEV BYPASS — remove before final submission
-          // Fakes an admin user so admin screens are testable without backend
-          const fakeAdmin: User = {
-            _id: "u1",
-            name: "Dev Admin",
-            email: "admin@example.com",
-            isAdmin: true,
-          };
-          setToken("dev-token");
-          setUser(fakeAdmin);
         }
       } catch (e) {
         console.log("Auth bootstrap error", e);
       } finally {
-        setInitializing(false);
+        const elapsed = Date.now() - startedAt;
+        const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+        setTimeout(() => setInitializing(false), remaining);
       }
     };
     bootstrap();
@@ -83,6 +81,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(u);
   };
 
+  // ⚠️ TEMPORARY DEV — remove when backend is connected
+  const devLogin = async (asAdmin: boolean) => {
+    const fake: User = asAdmin
+      ? {
+          _id: "u1",
+          name: "Dev Admin",
+          email: "admin@example.com",
+          isAdmin: true,
+        }
+      : {
+          _id: "u2",
+          name: "Dev Customer",
+          email: "customer@example.com",
+          isAdmin: false,
+        };
+    await AsyncStorage.setItem("token", "dev-token");
+    await AsyncStorage.setItem("user", JSON.stringify(fake));
+    setToken("dev-token");
+    setUser(fake);
+  };
+
   const logout = async () => {
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("user");
@@ -92,7 +111,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, initializing, login, register, logout }}
+      value={{
+        user,
+        token,
+        initializing,
+        login,
+        register,
+        devLogin,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

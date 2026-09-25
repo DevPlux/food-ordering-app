@@ -2,6 +2,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
 import MenuListScreen from "../screens/menu/MenuListScreen";
 import MenuDetailScreen from "../screens/menu/MenuDetailScreen";
 import MyOrdersScreen from "../screens/orders/MyOrdersScreen";
@@ -9,6 +10,8 @@ import OrderDetailScreen from "../screens/orders/OrderDetailScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 import AdminMenuListScreen from "../screens/admin/AdminMenuListScreen";
 import MenuItemFormScreen from "../screens/admin/MenuItemFormScreen";
+import AdminOrdersScreen from "../screens/admin/AdminOrdersScreen";
+import AdminOrderDetailScreen from "../screens/admin/AdminOrderDetailScreen";
 import { colors } from "../theme/colors";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -25,17 +28,9 @@ const AdminStack = createNativeStackNavigator<AdminStackParamList>();
 
 function MenuStackScreen() {
   return (
-    <MenuStack.Navigator>
-      <MenuStack.Screen
-        name="MenuList"
-        component={MenuListScreen}
-        options={{ title: "Menu" }}
-      />
-      <MenuStack.Screen
-        name="MenuDetail"
-        component={MenuDetailScreen}
-        options={{ title: "Item" }}
-      />
+    <MenuStack.Navigator screenOptions={{ headerShown: false }}>
+      <MenuStack.Screen name="MenuList" component={MenuListScreen} />
+      <MenuStack.Screen name="MenuDetail" component={MenuDetailScreen} />
     </MenuStack.Navigator>
   );
 }
@@ -49,31 +44,15 @@ function OrdersStackScreen() {
   );
 }
 
-import AdminOrdersScreen from "../screens/admin/AdminOrdersScreen";
-import AdminOrderDetailScreen from "../screens/admin/AdminOrderDetailScreen";
-
 function AdminStackScreen() {
   return (
-    <AdminStack.Navigator>
-      <AdminStack.Screen
-        name="AdminMenuList"
-        component={AdminMenuListScreen}
-        options={{ title: "Admin" }}
-      />
-      <AdminStack.Screen
-        name="MenuItemForm"
-        component={MenuItemFormScreen}
-        options={{ title: "Menu Item" }}
-      />
-      <AdminStack.Screen
-        name="AdminOrders"
-        component={AdminOrdersScreen}
-        options={{ title: "All Orders" }}
-      />
+    <AdminStack.Navigator screenOptions={{ headerShown: false }}>
+      <AdminStack.Screen name="AdminMenuList" component={AdminMenuListScreen} />
+      <AdminStack.Screen name="MenuItemForm" component={MenuItemFormScreen} />
+      <AdminStack.Screen name="AdminOrders" component={AdminOrdersScreen} />
       <AdminStack.Screen
         name="AdminOrderDetail"
         component={AdminOrderDetailScreen}
-        options={{ title: "Order Details" }}
       />
     </AdminStack.Navigator>
   );
@@ -88,29 +67,74 @@ export default function MainTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         headerShown: false,
+        tabBarStyle: {
+          paddingBottom: 6,
+          paddingTop: 6,
+          height: 62,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600",
+        },
       }}
     >
       <Tab.Screen
         name="MenuTab"
         component={MenuStackScreen}
-        options={{ title: "Menu" }}
+        options={{
+          title: "Menu",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "fast-food" : "fast-food-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
       />
       <Tab.Screen
         name="OrdersTab"
         component={OrdersStackScreen}
-        options={{ title: "Orders" }}
+        options={{
+          title: "Orders",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "receipt" : "receipt-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
       />
       {user?.isAdmin && (
         <Tab.Screen
           name="AdminTab"
           component={AdminStackScreen}
-          options={{ title: "Admin" }}
+          options={{
+            title: "Admin",
+            tabBarIcon: ({ color, size, focused }) => (
+              <Ionicons
+                name={focused ? "settings" : "settings-outline"}
+                size={size}
+                color={color}
+              />
+            ),
+          }}
         />
       )}
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
-        options={{ title: "Profile" }}
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "person" : "person-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
       />
     </Tab.Navigator>
   );
