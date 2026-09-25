@@ -1,5 +1,7 @@
+// src/components/MenuCard.tsx
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import { MenuItem } from "../types/menuItem";
 
@@ -12,26 +14,51 @@ export default function MenuCard({ item, onPress }: Props) {
   const isAvailable = item.availabilityStatus === "Available";
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <Image
-        source={{ uri: item.imageUrl || "https://via.placeholder.com/150" }}
-        style={styles.image}
-      />
-      <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>
-          {item.name}
-        </Text>
-        <Text style={styles.category}>{item.category}</Text>
-        <View style={styles.row}>
-          <Text style={styles.price}>Rs. {item.price.toFixed(2)}</Text>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
+      <View style={styles.imageWrapper}>
+        <Image
+          source={{ uri: item.imageUrl || "https://via.placeholder.com/400" }}
+          style={styles.image}
+        />
+        {/* Category pill (top-left) */}
+        <View style={styles.categoryPill}>
+          <Text style={styles.categoryText}>{item.category}</Text>
+        </View>
+        {/* Availability pill (top-right) */}
+        <View
+          style={[
+            styles.statusPill,
+            isAvailable ? styles.availPill : styles.unavailPill,
+          ]}
+        >
           <Text
             style={[
-              styles.status,
-              isAvailable ? styles.available : styles.unavailable,
+              styles.statusText,
+              isAvailable ? styles.availText : styles.unavailText,
             ]}
           >
             {item.availabilityStatus}
           </Text>
+        </View>
+      </View>
+
+      <View style={styles.body}>
+        <Text style={styles.name} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {item.description}
+        </Text>
+
+        <View style={styles.footer}>
+          <Text style={styles.price}>Rs. {item.price.toFixed(2)}</Text>
+          <View style={[styles.addBtn, !isAvailable && styles.addBtnDisabled]}>
+            <Ionicons
+              name="add"
+              size={20}
+              color={isAvailable ? colors.white : colors.textMuted}
+            />
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -40,61 +67,84 @@ export default function MenuCard({ item, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
     backgroundColor: colors.white,
-    borderRadius: 12,
-    marginBottom: 16,
-    padding: 12,
+    borderRadius: 18,
+    marginBottom: 18,
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3, // For Android
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  image: {
-    width: 90,
-    height: 90,
-    borderRadius: 8,
+  imageWrapper: {
+    position: "relative",
+    width: "100%",
+    height: 170,
     backgroundColor: colors.surface,
   },
-  info: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: "space-between",
+  image: { width: "100%", height: "100%" },
+  categoryPill: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
+  categoryText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 0.3,
+  },
+  statusPill: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  availPill: { backgroundColor: "#E8F5E9" },
+  unavailPill: { backgroundColor: "#FFEBEE" },
+  statusText: { fontSize: 11, fontWeight: "700" },
+  availText: { color: colors.success },
+  unavailText: { color: colors.danger },
+
+  body: { padding: 14 },
   name: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "700",
     color: colors.text,
+    marginBottom: 4,
   },
-  category: {
+  description: {
     fontSize: 13,
     color: colors.textMuted,
+    lineHeight: 18,
+    marginBottom: 12,
   },
-  row: {
+  footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   price: {
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "800",
     color: colors.primary,
   },
-  status: {
-    fontSize: 12,
-    fontWeight: "600",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    overflow: "hidden",
+  addBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  available: {
-    backgroundColor: "#E8F5E9",
-    color: colors.success,
-  },
-  unavailable: {
-    backgroundColor: "#FFEBEE",
-    color: colors.danger,
+  addBtnDisabled: {
+    backgroundColor: colors.surface,
   },
 });
