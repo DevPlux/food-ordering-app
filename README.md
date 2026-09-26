@@ -219,10 +219,10 @@ food-ordering-app/
 
 ```text
 Backend URL:
-https://your-backend-url.onrender.com
+https://food-ordering-app-8wh7.onrender.com/api
 
 Health Check:
-https://your-backend-url.onrender.com/health
+https://food-ordering-app-8wh7.onrender.com/health
 ```
 
 > Replace the placeholder URL with the actual deployed Render URL before submission.
@@ -398,7 +398,7 @@ const autoIp = debuggerHost ? debuggerHost.split(":")[0] : "localhost";
 
 export const API_BASE_URL = __DEV__
   ? `http://${autoIp}:5000/api`
-  : "https://your-backend-url.onrender.com/api";
+  : "https://food-ordering-app-8wh7.onrender.com/health";
 ```
 
 ---
